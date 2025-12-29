@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Maps App</title>
+
+    <link rel="preconnect" href="https://unpkg.com" />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <meta name="theme-color" content="#60a5fa" />
+    <link rel="icon" href="./icons/icon-192.png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+  </head>
+
+  <body>
+    <a class="skip-link" href="#app">Lewati ke konten utama</a>
+
+    <header class="site-header" role="banner">
+      <nav class="topnav" aria-label="Navigasi utama">
+        <a class="brand" href="#/home" aria-label="Beranda Maps App">Maps App</a>
+        <button id="menuBtn" class="menu-btn" aria-expanded="false" aria-controls="navlinks">☰</button>
+        <ul id="navlinks" class="navlinks" role="menubar">
+          <li role="none"><a role="menuitem" href="#/stories-saved" id="storiesSavedLink">Tersimpan</a></li>
+          <li role="none"><a role="menuitem" href="#/home">Home</a></li>
+          <li role="none"><a role="menuitem" href="#/add">Tambah Cerita</a></li>
+          <li role="none"><a role="menuitem" href="#/login" id="authLink">Login</a></li>
+          <li role="none"><button id="logoutBtn" class="linklike" aria-label="Keluar">Logout</button></li>
+          <li role="none"><button id="btnNotif" class="linklike">Aktifkan Notifikasi</button></li>
+          <li role="none"><button id="btnInstall" class="linklike" hidden>Install App</button></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main id="app" class="app" role="main" tabindex="-1"></main>
+
+    <footer class="site-footer" role="contentinfo">
+      <p>&copy; <span id="year"></span> Maps App - Noor Senita Syaira</p>
+    </footer>
+
+    <script src="./bundle.js"></script>
+  </body>
+</html>
