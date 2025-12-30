@@ -1,4 +1,4 @@
-const NAMA_CACHE = 'mapsapp-v2';
+const NAMA_CACHE = 'mapsapp-v3';
 const ASET_CACHE = ['/', '/index.html', '/bundle.js', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png'];
 
 // Event Install - Cache aset statis
@@ -37,36 +37,45 @@ self.addEventListener('activate', (event) => {
 });
 
 // Event Fetch - Network first, fallback to cache
-// PENTING: Skip request ke API eksternal untuk menghindari error CORS
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  if (event.request.method !== 'GET') {
+  if (event.request.method !== 'GET') return;
+
+  // Izinkan cache untuk origin sendiri ATAU API Dicoding
+  const isAppOrigin = url.origin === self.location.origin;
+  const isApiUrl = url.href.includes('story-api.dicoding.dev');
+
+  if (!isAppOrigin && !isApiUrl) {
+    // Skip request external lain (misal CDN analytics, dll) kecuali API kita
     return;
   }
 
-  if (url.origin !== self.location.origin) {
-    return;
-  }
-
-  if (!event.request.url.startsWith('http')) return;
-  if (!event.request.url.startsWith('http')) return;
+  // Khusus API: Network First, Fallback Cache
+  // Khusus App Shell: Stale-While-Revalidate (atau Cache First lalu update)
+  // Di sini kita gunakan strategi umum Network First untuk simplifikasi dan keamanan data
 
   event.respondWith(
     fetch(event.request)
       .then((response) => {
+        // Cek response valid
+        if (!response || response.status !== 200 || (response.type !== 'basic' && response.type !== 'cors')) {
+          return response;
+        }
+
         const responseClone = response.clone();
         caches.open(NAMA_CACHE).then((cache) => {
-          // Hanya cache request yang berhasil
-          if (response.status === 200) {
-            cache.put(event.request, responseClone);
-          }
+          cache.put(event.request, responseClone);
         });
         return response;
       })
       .catch(() => {
         // Jika offline, ambil dari cache
-        return caches.match(event.request);
+        return caches.match(event.request).then((cachedResponse) => {
+          if (cachedResponse) return cachedResponse;
+          // Jika tidak ada di cache dan ini request gambar/halaman, bisa return placeholder
+          throw new Error('No cache available');
+        });
       })
   );
 });

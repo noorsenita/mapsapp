@@ -441,7 +441,7 @@ router.register('/home', async () => {
         ${loggedIn
           ? `
         <div class="map-toolbar">
-          <h1 id="mapTitle" style="margin-right:auto">Peta Cerita</h1>
+          <h1 id="mapTitle" style="margin-right:auto">🗺️ Peta Cerita</h1>
           <label for="tileSelect" class="helper">Tampilan Peta</label>
           <select id="tileSelect" aria-label="Pilih tampilan peta">
             <option value="osm">Standar</option>
@@ -461,7 +461,8 @@ router.register('/home', async () => {
 
       <section class="card" aria-labelledby="listTitle">
         <div style="display:flex;align-items:center;gap:.5rem;justify-content:space-between">
-          <h2 id="listTitle">Daftar Cerita</h2>
+          <h2 id="listTitle">📃 Daftar Cerita</h2>
+          <label for="searchStories" class="sr-only">Cari judul atau deskripsi cerita</label>
           <input id="searchStories" placeholder="Cari nama/teks..." aria-label="Cari cerita" />
         </div>
         <div id="list" class="list" aria-live="polite"></div>
@@ -539,6 +540,16 @@ router.register('/home', async () => {
     el.addEventListener('mouseleave', () => {
       const mk = markerById.get(s.id);
       if (mk) mk.setZIndexOffset(0);
+    });
+    el.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Enter' || ev.key === ' ') {
+        ev.preventDefault();
+        const mk = markerById.get(s.id);
+        if (mk) {
+          m.setView(mk.getLatLng(), 10, { animate: true });
+          mk.openPopup();
+        }
+      }
     });
     return el;
   }
@@ -705,22 +716,28 @@ router.register('/add', async () => {
   app.innerHTML = html`
     <section class="grid grid-2">
       <section class="card">
-        <h2>Lokasi</h2>
+        <h1>📍 Pilih Lokasi</h1>
         <p class="helper">Klik pada peta untuk memilih latitude/longitude.</p>
         <div id="map" aria-label="Peta pemilihan lokasi"></div>
       </section>
 
       <section class="card">
-        <h1>Tambah Cerita</h1>
+        <h2>📝 Tambah Cerita</h2>
         <form id="addForm" novalidate>
           <label for="desc">Deskripsi</label>
           <textarea id="desc" name="description" rows="4" required placeholder="Tulis deskripsi singkat..."></textarea>
 
           <fieldset style="border:1px solid #263042; border-radius:.75rem; padding: .75rem; margin-top:.75rem;">
             <legend>Gambar</legend>
-            <div style="display:flex; gap:.5rem; flex-wrap:wrap">
-              <label><input type="radio" name="imgsrc" value="file" checked /> Upload File</label>
-              <label><input type="radio" name="imgsrc" value="camera" /> Kamera</label>
+            <div style="display:flex; gap:1rem; flex-wrap:wrap">
+              <div style="display:flex; align-items:center; gap:0.25rem">
+                <input type="radio" id="sourceFile" name="imgsrc" value="file" checked />
+                <label for="sourceFile">Upload File</label>
+              </div>
+              <div style="display:flex; align-items:center; gap:0.25rem">
+                <input type="radio" id="sourceCam" name="imgsrc" value="camera" />
+                <label for="sourceCam">Kamera</label>
+              </div>
             </div>
             <div id="fileWrap">
               <label for="photo">Pilih Berkas</label>
@@ -752,7 +769,7 @@ router.register('/add', async () => {
 
           <div style="display:flex; gap:.5rem; margin-top:.75rem">
             <button class="primary" type="submit">Kirim</button>
-            <a class="secondary" href="#/home" role="button">Batal</a>
+            <button class="secondary" id="btnCancelAdd" type="button">Batal</button>
           </div>
           <p id="msg" class="helper" aria-live="polite"></p>
         </form>
@@ -840,6 +857,16 @@ router.register('/add', async () => {
     return f instanceof Blob ? f : new Blob([await f.arrayBuffer()], { type: f.type || 'image/jpeg' });
   }
 
+  // Tombol Batal logic
+  $('#btnCancelAdd').addEventListener('click', () => {
+    // Jika ada history kembali, jika tidak ke home
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      location.hash = '#/home';
+    }
+  });
+
   // ===== Submit: Online dulu, gagal -> simpan ke IndexedDB =====
   $('#addForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -885,7 +912,7 @@ router.register('/saved', async () => {
   const app = document.getElementById('app');
   app.innerHTML = html`
     <section class="card">
-      <h1>Laporan Tersimpan (Offline)</h1>
+      <h1>📂 Laporan Tersimpan (Offline)</h1>
       <p class="helper">Ini antrian kiriman saat offline. Kamu bisa hapus atau kirim sekarang.</p>
       <div style="display:flex; gap:.5rem; margin:.5rem 0">
         <button id="btnSyncAll" class="primary">Kirim Semua Sekarang</button>
@@ -977,7 +1004,7 @@ router.register('/stories-saved', async () => {
   const app = document.getElementById('app');
   app.innerHTML = html`
     <section class="card">
-      <h1>Cerita Tersimpan</h1>
+      <h1>🔖 Cerita Tersimpan</h1>
       <p class="helper">Cerita yang kamu simpan secara lokal (IndexedDB).</p>
       <div style="display:flex; gap:.5rem; margin:.5rem 0">
         <button id="btnRefreshLocal" class="secondary">Muat Ulang</button>
@@ -992,9 +1019,10 @@ router.register('/stories-saved', async () => {
 
   async function renderLocal() {
     listEl.innerHTML = '';
+    msgEl.textContent = '';
     const rows = await ambilSemuaFavorite();
     if (!rows.length) {
-      listEl.innerHTML = `<p class="helper">Belum ada cerita tersimpan. Simpan cerita dari halaman Home.</p>`;
+      listEl.innerHTML = `<p class="helper">Belum ada cerita tersimpan. Simpan cerita dari halaman <a href="#/home">Home</a>.</p>`;
       return;
     }
     msgEl.textContent = rows.length + ' cerita tersimpan';
