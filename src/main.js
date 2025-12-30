@@ -515,10 +515,10 @@ router.register('/home', async () => {
     el.setAttribute('role', 'button');
     el.setAttribute('aria-label', `Cerita oleh ${s.name || 'anonim'}`);
     el.innerHTML = `
-      <img src="${s.photoUrl || ''}" alt="Foto cerita" loading="lazy" />
+      <img src="${s.photoUrl || ''}" alt="Foto cerita oleh ${s.name || 'pengguna'}" loading="lazy" />
       <div>
         <strong>${s.name || 'Tanpa Nama'}</strong>
-        <p class="helper">${s.createdAt ? new Date(s.createdAt).toLocaleString() : ''}</p>
+        <time class="helper" datetime="${s.createdAt}">${s.createdAt ? new Date(s.createdAt).toLocaleString() : ''}</time>
         <p>${s.description ? String(s.description).replace(/</g, '&lt;') : '-'}</p>
         <div style="margin-top:.5rem; display:flex; gap:.5rem">
           ${opts.showSave ? `<button class="btn-save" data-act="save" data-id="${s.id}"> Simpan</button>` : ''}
@@ -940,7 +940,7 @@ router.register('/saved', async () => {
       el.innerHTML = `
         <div>
           <strong>${(r.description || '').slice(0, 60) || '(tanpa deskripsi)'}</strong>
-          <p class="helper">${time} — ${r.lat ?? '-'}, ${r.lon ?? '-'}</p>
+          <p class="helper"><time datetime="${r.createdAt}">${time}</time> — ${r.lat ?? '-'}, ${r.lon ?? '-'}</p>
           <div style="display:flex; gap:.5rem; margin-top:.5rem">
             <button class="primary" data-act="send" data-id="${r.id}">Kirim</button>
             <button class="danger"  data-act="del"  data-id="${r.id}">Hapus</button>
@@ -1031,10 +1031,10 @@ router.register('/stories-saved', async () => {
       el.className = 'item';
       const time = new Date(r.createdAt || Date.now()).toLocaleString();
       el.innerHTML = `
-        <img src="${r.photoUrl || ''}" alt="Foto cerita" loading="lazy" />
+        <img src="${r.photoUrl || ''}" alt="Foto cerita oleh ${r.name || 'pengguna'}" loading="lazy" />
         <div>
           <strong>${r.name || '(Tanpa Nama)'}</strong>
-          <p class="helper">${time}</p>
+          <p class="helper"><time datetime="${r.createdAt}">${time}</time></p>
           <p>${(r.description || '').slice(0, 200)}</p>
           <div style="display:flex; gap:.5rem; margin-top:.5rem">
             <button class="danger" data-act="del" data-id="${r.id}">Hapus</button>

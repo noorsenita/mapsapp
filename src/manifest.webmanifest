@@ -14,9 +14,9 @@
   ],
   "screenshots": [
     {
-      "src": "icons/screenshot-1.jpg",
+      "src": "icons/screenshot-1.png",
       "sizes": "1280x720",
-      "type": "image/jpeg",
+      "type": "image/png",
       "label": "Beranda peta dan daftar cerita"
     }
   ],
